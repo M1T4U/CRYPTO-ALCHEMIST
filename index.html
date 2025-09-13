@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Pro Trader's Handbook</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --color-brand-blue: #00B4D8;
+      --color-brand-purple: #9B5DE5;
+      --color-tech-green: #2dd4bf;
+      --color-keyword-light: #0d9488;
+      --color-primary: #ffffff;
+      --color-secondary: #F7FAFC;
+      --color-tertiary: #EDF2F7;
+      --color-text-primary: #1A202C;
+      --color-text-secondary: #4A5568;
+      --color-text-muted: #718096;
+      --color-border: #E2E8F0;
+      --color-dot-pattern: rgba(0, 0, 0, 0.05);
+      --color-chat-bubble-user: #00B4D8;
+      --color-chat-bubble-user-text: #ffffff;
+      --color-chat-bubble-ai: #EDF2F7;
+      --color-chat-bubble-ai-text: #1A202C;
+    }
+
+    .dark {
+      --color-primary: #0D1117;
+      --color-secondary: #161B22;
+      --color-tertiary: #21262D;
+      --color-text-primary: #E2E8F0;
+      --color-text-secondary: #A0AEC0;
+      --color-text-muted: #718096;
+      --color-border: #2D3748;
+      --color-dot-pattern: rgba(255, 255, 255, 0.05);
+      --color-chat-bubble-user: #00B4D8;
+      --color-chat-bubble-user-text: #ffffff;
+      --color-chat-bubble-ai: #21262D;
+      --color-chat-bubble-ai-text: #E2E8F0;
+    }
+
+    body {
+      background-color: var(--color-primary);
+      color: var(--color-text-primary);
+      background-image: radial-gradient(circle at 1px 1px, var(--color-dot-pattern) 1px, transparent 0);
+      background-size: 25px 25px;
+    }
+  </style>
+
+  <!-- Tailwind Config -->
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "brand-blue": "var(--color-brand-blue)",
+            "brand-purple": "var(--color-brand-purple)",
+            "tech-green": "var(--color-tech-green)",
+            "keyword-light": "var(--color-keyword-light)",
+            primary: "var(--color-primary)",
+            secondary: "var(--color-secondary)",
+            tertiary: "var(--color-tertiary)",
+            "text-primary": "var(--color-text-primary)",
+            "text-secondary": "var(--color-text-secondary)",
+            "text-muted": "var(--color-text-muted)",
+            "border-color": "var(--color-border)",
+            "chat-bubble-user": "var(--color-chat-bubble-user)",
+            "chat-bubble-user-text": "var(--color-chat-bubble-user-text)",
+            "chat-bubble-ai": "var(--color-chat-bubble-ai)",
+            "chat-bubble-ai-text": "var(--color-chat-bubble-ai-text)",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
+          },
+          animation: {
+            glow: "glow 1.5s ease-in-out infinite alternate",
+            "pulse-fast": "pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+            "fade-in-message": "fadeInMessage 0.5s ease-out forwards",
+            "pulse-dot": "pulseDot 1.4s infinite ease-in-out both",
+            hover: "hover 20s linear infinite alternate",
+            blink: "blink 1s step-end infinite",
+          },
+          keyframes: {
+            glow: {
+              from: { boxShadow: "0 0 5px #9B5DE5, 0 0 10px #9B5DE5" },
+              to: { boxShadow: "0 0 20px #9B5DE5, 0 0 30px #9B5DE5" },
+            },
+            fadeInMessage: {
+              "0%": { opacity: "0", transform: "translateY(10px)" },
+              "100%": { opacity: "1", transform: "translateY(0)" },
+            },
+            pulseDot: {
+              "0%, 80%, 100%": { transform: "scale(0)", opacity: "0.5" },
+              "40%": { transform: "scale(1.0)", opacity: "1" },
+            },
+            hover: {
+              "0%": { transform: "translate(0px, 0px) scale(1) rotate(0deg)" },
+              "25%": { transform: "translate(40px, -60px) scale(1.1) rotate(5deg)" },
+              "50%": { transform: "translate(-40px, 40px) scale(0.9) rotate(-5deg)" },
+              "75%": { transform: "translate(60px, 80px) scale(1.2) rotate(10deg)" },
+              "100%": { transform: "translate(0px, 0px) scale(1) rotate(0deg)" },
+            },
+            blink: {
+              "50%": { opacity: "0" },
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet" />
+
+  <!-- Import Maps -->
+  <script type="importmap">
+      {
+        "imports": {
+          "react": "https://esm.sh/react@^19.1.1",
+          "react-dom": "https://esm.sh/react-dom@^19.1.1",
+          "express": "https://esm.sh/express@^5.1.0",
+          "cors": "https://esm.sh/cors@^2.8.5",
+          "@google/genai": "https://esm.sh/@google/genai@^1.14.0"
+        }
+      }
+    </script>
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="/index.css" />
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+
+</html>
