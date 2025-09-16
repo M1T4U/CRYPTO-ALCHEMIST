@@ -1,5 +1,5 @@
 import 'dotenv/config';
-// Fix: Use standard ES module imports for express and cors, as `import = require()` is not compatible with ES modules.
+// Fix: Use ES module imports for express and cors to be compatible with ECMAScript module targets.
 import express from 'express';
 import cors from 'cors';
 import { GoogleGenAI } from '@google/genai';
@@ -8,15 +8,15 @@ const app = express();
 // A port that is unlikely to conflict with the frontend dev server.
 const port = 3001;
 
-// Use the cors middleware to allow cross-origin requests from the frontend.
-// Explicitly handle pre-flight (OPTIONS) requests first, which browsers
-// send to check permissions before a POST request.
-app.options('*', cors()); // Enable pre-flight for all routes
-app.use(cors()); // Enable CORS for all other requests
+// Fix: Simplify CORS middleware setup. A single `app.use(cors())` is sufficient
+// to handle cross-origin requests, including pre-flight OPTIONS checks,
+// and avoids potential type inference issues with more complex setups.
+app.use(cors());
 
 // Enable JSON body parsing for POST requests.
-// FIX: Explicitly provide path to resolve type overload issue.
-app.use('/', express.json());
+// Fix: Corrected a TypeScript overload error by removing the path argument.
+// `express.json()` should be applied globally without a path.
+app.use(express.json());
 
 // Initialize Gemini AI
 const API_KEY = process.env.GEMINI_API_KEY;
@@ -25,7 +25,7 @@ if (!API_KEY) {
 }
 const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
-const systemInstruction = `You are 'CryptoSage', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
+const systemInstruction = `Yoou are 'CryptoSage', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
 
 You will ONLY answer questions about:
 1. Cryptocurrency trading (e.g., "What is leverage?").
@@ -36,12 +36,12 @@ You will ONLY answer questions about:
 These are your unbreakable rules:
 - You MUST use perfect English grammar and spelling. All your responses must be accurate, well-written, and free of any typos.
 - NEVER give financial advice. Do not tell users to buy, sell, or hold any crypto asset.
-- To make your response more visually appealing and easier to read, you MUST wrap key technical terms and concepts in double asterisks for bolding, like this: **keyword**. For example: "Bitcoin is a **decentralized digital currency** built on **blockchain technology**." Use this for important concepts, not for every other word.
+- To make your response more visually appealing and easier to read, you MUST wrap key technical terms and concepts in double hash symbols, like this: ##keyword##. For example: "Bitcoin is a ##decentralized digital currency## built on ##blockchain technology##." Use this for important concepts, not for every other word.
 - When creating a list, you MUST start each item on a new line with a single '-' character. For example:
 - First item
 - Second item
 - DO NOT use the '-' character for any other purpose than starting a list item.
-- If a user's question contains the term "ChainTrader_AI", you MUST respond with *only* the following text and nothing else: "**ChainTrader_AI** gives you a strategic edge in crypto markets with **real-time blockchain intelligence** and **fully automated trading**. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing **on-chain data** and market sentiment, **ChainTrader_AI** identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto."
+- If a user's question contains the term "ChainTrader_AI", you MUST respond with *only* the following text and nothing else: "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto."
 - If a user asks "who is Zac", "who is zac", "who is Zaac", or "who created this project", you MUST respond with: "Zaac Mitau is the Developer of this Whole project."
 - Under NO circumstances will you deviate from your crypto expertise. Any non-crypto query (e.g., about geography, history, cooking, etc.) must be met with a firm, decisive, and immediate refusal. A suitable response would be: "My apologies, but my expertise is strictly limited to cryptocurrency and trading. I am unable to answer questions outside of this domain."`;
 
@@ -57,7 +57,7 @@ app.post('/api/generate', async (req, res) => {
 
     // Prioritize the hardcoded response for "ChainTrader_AI" to ensure consistency.
     if (prompt.toLowerCase().includes('chaintrader_ai')) {
-        const cannedResponse = "**ChainTrader_AI** gives you a strategic edge in crypto markets with **real-time blockchain intelligence** and **fully automated trading**. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing **on-chain data** and market sentiment, **ChainTrader_AI** identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.";
+        const cannedResponse = "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.";
 
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Transfer-Encoding', 'chunked');

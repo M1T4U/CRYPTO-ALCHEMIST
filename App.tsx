@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { ContentView } from './components/ContentView';
@@ -51,6 +52,21 @@ export default function App() {
     setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
   };
 
+  const findModuleIdForChapter = (chapterId: string): string | undefined => {
+    for (const module of modules) {
+      if (module.chapters.some(c => c.id === chapterId)) {
+        return module.id;
+      }
+    }
+    return undefined;
+  };
+
+  // If the selected chapter is the initial welcome chapter, don't pass a module ID
+  // so the chatbot shows the default welcome FAQs.
+  const currentModuleId = selectedChapter.id === 'm1-intro' 
+    ? undefined 
+    : findModuleIdForChapter(selectedChapter.id);
+
   return (
     <div className="h-screen bg-primary text-text-primary font-sans flex flex-col md:flex-row overflow-hidden">
       <div 
@@ -72,7 +88,7 @@ export default function App() {
             <ContentView chapter={selectedChapter} theme={theme} />
           </div>
           <div className="w-full xl:w-1/3 h-2/5 xl:h-full bg-secondary/50 border-l border-border-color flex flex-col flex-shrink-0">
-            <Chatbot theme={theme} />
+            <Chatbot key={currentModuleId || 'default'} theme={theme} moduleId={currentModuleId} />
           </div>
         </div>
       </main>

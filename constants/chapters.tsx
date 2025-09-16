@@ -30,6 +30,12 @@ const TypingEffect: React.FC<{ text: string, className?: string }> = ({ text, cl
     );
 };
 
+const Keyword = ({ children }: { children: React.ReactNode }) => (
+    <strong className="font-bold text-keyword-light dark:text-tech-green">
+        {children}
+    </strong>
+);
+
 const ChapterContentWrapper: React.FC<{ title: string, level: string, children: React.ReactNode }> = ({ title, level, children }) => (
     <div className="animate-fade-in">
         <div className="mb-8">
@@ -66,7 +72,7 @@ export const modules: Module[] = [
                 title: 'Welcome, Digital Alchemist',
                 level: 'Beginner',
                 content: <ChapterContentWrapper title="Welcome, Digital Alchemist" level="Beginner">
-                    <TypingEffect text={`Yoou are entering a world where markets move at the speed of thought, and every tick in price tells a story. This is not traditional investing. This is crypto trading—an intense, real-time battle of psychology, strategy, and execution where milliseconds can mean millions, and the prepared trader thrives while the unprepared is swept aside.
+                    <TypingEffect text={`You are entering a world where markets move at the speed of thought, and every tick in price tells a story. This is not traditional investing. This is crypto trading—an intense, real-time battle of psychology, strategy, and execution where milliseconds can mean millions, and the prepared trader thrives while the unprepared is swept aside.
 
 This handbook is your tactical guide to mastering the chaos, a blueprint forged in the heat of volatile markets, designed to turn raw information into profitable decisions. It is packed with advanced strategies, proven systems, and deep insights drawn from real market experience—built to transform you from an uncertain participant into a confident, consistent, and strategic crypto trader.
 
@@ -825,7 +831,9 @@ So step in. Sharpen your edge. The markets are waiting—and every chart holds a
                     
                     <CodeBlock>
                         <p className="font-semibold text-text-primary">Introducing ChainTrader_AI:</p>
-                        <p className="mt-2">ChainTrader_AI gives you a strategic edge in crypto markets with real-time blockchain intelligence and fully automated trading. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing on-chain data and market sentiment, ChainTrader_AI identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.</p>
+                        <p className="mt-2">
+                            <Keyword>ChainTrader_AI</Keyword> gives you a strategic edge in crypto markets with <Keyword>real-time blockchain intelligence</Keyword> and <Keyword>fully automated trading</Keyword>. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing <Keyword>on-chain data</Keyword> and market sentiment, <Keyword>ChainTrader_AI</Keyword> identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.
+                        </p>
                     </CodeBlock>
                 </ChapterContentWrapper>
             },
