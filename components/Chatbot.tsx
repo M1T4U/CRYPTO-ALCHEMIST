@@ -40,14 +40,22 @@ const BlockchainNodeBackground = () => (
   </div>
 );
 
+const getInitialFaqs = (moduleId?: string): string[] => {
+    if (moduleId && moduleFaqs[moduleId]) {
+        return moduleFaqs[moduleId];
+    }
+    return moduleFaqs['default'];
+};
+
+
 export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, moduleId }) => {
     const [messages, setMessages] = useState<Message[]>([
-        { id: 'initial', text: "Welcome! I'm CryptoSage, your AI trading tutor. Ask me anything about crypto, or start with one of the popular questions below.", sender: 'ai' }
+        { id: 'initial', text: "Welcome! I'm your Crypto Alchemist Assistant. Ask me anything about crypto, or start with one of the popular questions below.", sender: 'ai' }
     ]);
     const [input, setInput] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [showFaqs, setShowFaqs] = useState(true);
-    const [currentFaqs, setCurrentFaqs] = useState<string[]>(moduleFaqs['default']);
+    const [currentFaqs, setCurrentFaqs] = useState<string[]>(() => getInitialFaqs(moduleId));
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const scrollToBottom = () => {
@@ -59,11 +67,9 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
     }, [messages, isLoading]);
 
     useEffect(() => {
-        if (moduleId && moduleFaqs[moduleId]) {
-            setCurrentFaqs(moduleFaqs[moduleId]);
-        } else {
-            setCurrentFaqs(moduleFaqs['default']);
-        }
+        // This effect ensures that if the component somehow re-renders with a new moduleId
+        // without re-mounting, the FAQs still update correctly.
+        setCurrentFaqs(getInitialFaqs(moduleId));
         // When the module context changes, always show the relevant FAQs again.
         setShowFaqs(true);
     }, [moduleId]);
@@ -129,7 +135,7 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
                         <span className="absolute -bottom-1 -right-1 block h-3 w-3 rounded-full border-2 border-secondary bg-green-400"></span>
                     </div>
                     <div>
-                        <h2 className="text-lg font-bold bg-gradient-to-r from-brand-blue to-brand-purple text-transparent bg-clip-text">CryptoSage</h2>
+                        <h2 className="text-lg font-bold bg-gradient-to-r from-brand-blue to-brand-purple text-transparent bg-clip-text">Crypto Alchemist Assistant</h2>
                         <p className="text-sm text-text-secondary">Your AI Trading Tutor</p>
                     </div>
                 </div>
