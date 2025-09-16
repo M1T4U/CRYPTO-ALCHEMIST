@@ -72,7 +72,7 @@ export const modules: Module[] = [
                 title: 'Welcome, Digital Alchemist',
                 level: 'Beginner',
                 content: <ChapterContentWrapper title="Welcome, Digital Alchemist" level="Beginner">
-                    <TypingEffect text={`You are entering a world where markets move at the speed of thought, and every tick in price tells a story. This is not traditional investing. This is crypto trading—an intense, real-time battle of psychology, strategy, and execution where milliseconds can mean millions, and the prepared trader thrives while the unprepared is swept aside.
+                    <TypingEffect text={`Yoou are entering a world where markets move at the speed of thought, and every tick in price tells a story. This is not traditional investing. This is crypto trading—an intense, real-time battle of psychology, strategy, and execution where milliseconds can mean millions, and the prepared trader thrives while the unprepared is swept aside.
 
 This handbook is your tactical guide to mastering the chaos, a blueprint forged in the heat of volatile markets, designed to turn raw information into profitable decisions. It is packed with advanced strategies, proven systems, and deep insights drawn from real market experience—built to transform you from an uncertain participant into a confident, consistent, and strategic crypto trader.
 
