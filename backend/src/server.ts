@@ -8,24 +8,17 @@ const app = express();
 // A port that is unlikely to conflict with the frontend dev server.
 const port = 3001;
 
-// Fix: Simplify CORS middleware setup. A single `app.use(cors())` is sufficient
-// to handle cross-origin requests, including pre-flight OPTIONS checks,
-// and avoids potential type inference issues with more complex setups.
 app.use(cors());
-
-// Enable JSON body parsing for POST requests.
-// Fix: Corrected a TypeScript overload error by removing the path argument.
-// `express.json()` should be applied globally without a path.
-app.use(express.json());
+app.use('/', express.json());
 
 // Initialize Gemini AI
 const API_KEY = process.env.GEMINI_API_KEY;
 if (!API_KEY) {
-    console.error("API_KEY not found in environment variables. The AI chatbot functionality will be disabled.");
+    console.error("GEMINI_API_KEY not found in environment variables. The AI chatbot functionality will be disabled.");
 }
 const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
 
-const systemInstruction = `Yoou are 'CryptoSage', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
+const systemInstruction = `You are the 'Crypto Alchemist Assistant', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
 
 You will ONLY answer questions about:
 1. Cryptocurrency trading (e.g., "What is leverage?").
@@ -42,7 +35,7 @@ These are your unbreakable rules:
 - Second item
 - DO NOT use the '-' character for any other purpose than starting a list item.
 - If a user's question contains the term "ChainTrader_AI", you MUST respond with *only* the following text and nothing else: "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto."
-- If a user asks "who is Zac", "who is zac", "who is Zaac", or "who created this project", you MUST respond with: "Zaac Mitau is the Developer of this Whole project."
+- If a user asks "who is Zac", "who is zac", "who is Zac", or "who created this project", you MUST respond with: "Zac Mitau is the Developer of this Whole project."
 - Under NO circumstances will you deviate from your crypto expertise. Any non-crypto query (e.g., about geography, history, cooking, etc.) must be met with a firm, decisive, and immediate refusal. A suitable response would be: "My apologies, but my expertise is strictly limited to cryptocurrency and trading. I am unable to answer questions outside of this domain."`;
 
 app.post('/api/generate', async (req, res) => {
@@ -55,7 +48,7 @@ app.post('/api/generate', async (req, res) => {
         return res.status(400).json({ error: 'A valid string prompt is required.' });
     }
 
-    // Prioritize the hardcoded response for "ChainTrader_AI" to ensure consistency.
+    // Hardcoded ChainTrader_AI response
     if (prompt.toLowerCase().includes('chaintrader_ai')) {
         const cannedResponse = "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.";
 
@@ -63,7 +56,7 @@ app.post('/api/generate', async (req, res) => {
         res.setHeader('Transfer-Encoding', 'chunked');
         res.write(cannedResponse);
         res.end();
-        return; // End the request here, bypassing the Gemini API call.
+        return;
     }
 
     try {
@@ -95,18 +88,9 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
-/**
- * In-memory store for subscription status.
- * This is a simple solution for demonstration purposes.
- * In a real-world application, this data should be persisted in a database.
- * The key is a user's unique ID, and the value is an object containing the subscription timestamp.
- */
+// --- Subscription Management ---
 const subscriptions: Record<string, { subscribedAt: number }> = {};
 
-/**
- * Endpoint to subscribe a user.
- * Expects a `userId` in the request body.
- */
 app.post('/api/subscribe', (req, res) => {
     const { userId } = req.body;
     if (!userId || typeof userId !== 'string') {
@@ -117,14 +101,9 @@ app.post('/api/subscribe', (req, res) => {
     res.status(200).json({ success: true, isSubscribed: true });
 });
 
-/**
- * Endpoint to check a user's subscription status.
- * Uses a dynamic parameter `:userId` from the URL.
- */
 app.get('/api/subscription-status/:userId', (req, res) => {
     const { userId } = req.params;
     if (!userId) {
-        // This case is unlikely given the route structure but good for robustness.
         return res.status(400).json({ error: 'A userId parameter is required.' });
     }
     const subscription = subscriptions[userId];
@@ -136,11 +115,9 @@ app.get('/api/subscription-status/:userId', (req, res) => {
         const isExpired = (Date.now() - subscriptionDate) > thirtyThreeDaysInMillis;
 
         if (isExpired) {
-            // Subscription has expired, remove it from our records.
             delete subscriptions[userId];
             console.log(`Subscription for user ${userId} has expired and was removed.`);
         } else {
-            // Subscription is still active.
             isSubscribed = true;
         }
     }
@@ -149,11 +126,16 @@ app.get('/api/subscription-status/:userId', (req, res) => {
     res.status(200).json({ isSubscribed });
 });
 
-app.listen(port, () => {
-    console.log(`Backend server is running on http://localhost:${port}`);
-    console.log('This server manages user subscriptions for the Crypto Handbook.');
-    console.log('Endpoints:');
-    console.log('  POST /api/subscribe');
-    console.log('  GET  /api/subscription-status/:userId');
-    console.log('  POST /api/generate');
-});
+// --- Run locally only ---
+if (process.env.NODE_ENV !== "production") {
+    app.listen(port, () => {
+        console.log(`Backend server is running on http://localhost:${port}`);
+        console.log('This server manages user subscriptions for the Crypto Handbook.');
+        console.log('Endpoints:');
+        console.log('  POST /api/subscribe');
+        console.log('  GET  /api/subscription-status/:userId');
+        console.log('  POST /api/generate');
+    });
+}
+
+export default app; // ✅ required for Vercel
