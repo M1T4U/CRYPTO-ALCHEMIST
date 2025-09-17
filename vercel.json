@@ -1,9 +1,15 @@
 {
-    "buildCommand": "npm run build",
-    "outputDirectory": "dist",
-    "functions": {
-        "api/generate.js": {
-            "maxDuration": 30
+    "version": 2,
+    "builds": [
+        {
+            "src": "api/*.js",
+            "use": "@vercel/node"
         }
-    }
+    ],
+    "routes": [
+        {
+            "src": "/api/(.*)",
+            "dest": "/api/$1"
+        }
+    ]
 }

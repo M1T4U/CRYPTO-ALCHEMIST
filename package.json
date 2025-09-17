@@ -1,27 +1,14 @@
 {
-  "name": "crypto-pro-traders-handbook",
-  "private": true,
-  "version": "0.0.0",
+  "name": "crypto-alchemist",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "start": "node server.js"
+    "build": "echo 'No build required'"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "@google/generative-ai": "^0.21.0"
   },
-  "devDependencies": {
-    "@tailwindcss/typography": "^0.5.16",
-    "@types/node": "^22.18.1",
-    "@vitejs/plugin-react": "^5.0.2",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
-    "typescript": "~5.8.2",
-    "vite": "^6.3.6"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
