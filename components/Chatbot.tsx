@@ -103,24 +103,43 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
         };
         
         try {
-            // ✅ Call your deployed backend on Vercel
-            const response = await fetch("https://crypto-alchemist.vercel.app/api/generate", {
+            // Dynamic API URL for development vs production
+            const apiUrl = process.env.NODE_ENV === 'production' 
+                ? "https://crypto-alchemist.vercel.app/api/generate"
+                : "http://localhost:3001/api/generate";
+
+            const response = await fetch(apiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ prompt })
             });
 
-            if (!response.ok) throw new Error("Backend error");
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+                throw new Error(errorData.error || "Backend error");
+            }
 
-            const data = await response.text(); // change to response.json() if backend sends JSON
-            onChunk(data);
-
-            // (Optional fallback: keep Gemini in case backend fails)
-            // await getAiResponse(prompt, onChunk, onError);
+            // Handle streaming response
+            const reader = response.body?.getReader();
+            if (reader) {
+                const decoder = new TextDecoder();
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value, { stream: true });
+                    if (chunk) {
+                        onChunk(chunk);
+                    }
+                }
+            } else {
+                // Fallback for non-streaming response
+                const data = await response.text();
+                onChunk(data);
+            }
 
         } catch (error) {
             console.error("Error in sendMessage:", error);
-            onError("Failed to fetch response from server.");
+            onError(`Failed to fetch response from server: ${error instanceof Error ? error.message : 'Unknown error'}`);
         } finally {
             setIsLoading(false);
         }

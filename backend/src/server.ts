@@ -1,24 +1,29 @@
 import 'dotenv/config';
-// Fix: Use ES module imports for express and cors to be compatible with ECMAScript module targets.
 import express from 'express';
 import cors from 'cors';
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const app = express();
-// A port that is unlikely to conflict with the frontend dev server.
 const port = 3001;
 
-app.use(cors());
-app.use('/', express.json());
+// ✅ Fixed CORS configuration
+app.use(cors({
+    origin: ["http://localhost:5173", "https://crypto-alchemist.vercel.app"],
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"]
+}));
 
-// Initialize Gemini AI
+// ✅ Fixed middleware setup
+app.use(express.json());
+
+// ✅ Initialize Gemini AI with correct package
 const API_KEY = process.env.GEMINI_API_KEY;
 if (!API_KEY) {
     console.error("GEMINI_API_KEY not found in environment variables. The AI chatbot functionality will be disabled.");
 }
-const ai = API_KEY ? new GoogleGenAI({ apiKey: API_KEY }) : null;
+const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
-const systemInstruction = `You are the 'Crypto Alchemist Assistant', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
+const systemInstruction = `You are 'Crypto Alchemist Assistant', an expert AI assistant specializing in cryptocurrency and trading. Your mission is to provide comprehensive, accurate, and educational answers on all aspects of cryptocurrency and trading.
 
 You will ONLY answer questions about:
 1. Cryptocurrency trading (e.g., "What is leverage?").
@@ -29,17 +34,17 @@ You will ONLY answer questions about:
 These are your unbreakable rules:
 - You MUST use perfect English grammar and spelling. All your responses must be accurate, well-written, and free of any typos.
 - NEVER give financial advice. Do not tell users to buy, sell, or hold any crypto asset.
-- To make your response more visually appealing and easier to read, you MUST wrap key technical terms and concepts in double hash symbols, like this: ##keyword##. For example: "Bitcoin is a ##decentralized digital currency## built on ##blockchain technology##." Use this for important concepts, not for every other word.
+- To make your response more visually appealing and easier to read, you MUST wrap key technical terms and concepts in 🔹, like this: 🔹keyword🔹. For example: "Bitcoin is a 🔹decentralized digital currency🔹 built on 🔹blockchain technology🔹." Use this for important concepts, not for every other word.
 - When creating a list, you MUST start each item on a new line with a single '-' character. For example:
 - First item
 - Second item
 - DO NOT use the '-' character for any other purpose than starting a list item.
-- If a user's question contains the term "ChainTrader_AI", you MUST respond with *only* the following text and nothing else: "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto."
+- If a user asks about AI trading tools, bots, or specifically "ChainTrader_AI", you MUST provide the following information: "🔹ChainTrader_AI🔹 gives you a strategic edge in crypto markets with 🔹real-time blockchain intelligence🔹 and 🔹fully automated trading🔹. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing 🔹on-chain data🔹 and market sentiment, 🔹ChainTrader_AI🔹 identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto."
 - If a user asks "who is Zac", "who is zac", "who is Zac", or "who created this project", you MUST respond with: "Zac Mitau is the Developer of this Whole project."
 - Under NO circumstances will you deviate from your crypto expertise. Any non-crypto query (e.g., about geography, history, cooking, etc.) must be met with a firm, decisive, and immediate refusal. A suitable response would be: "My apologies, but my expertise is strictly limited to cryptocurrency and trading. I am unable to answer questions outside of this domain."`;
 
 app.post('/api/generate', async (req, res) => {
-    if (!ai) {
+    if (!genAI) {
         return res.status(503).json({ error: "The AI service is not available because the API key is not configured on the server." });
     }
 
@@ -48,23 +53,16 @@ app.post('/api/generate', async (req, res) => {
         return res.status(400).json({ error: 'A valid string prompt is required.' });
     }
 
-    // Hardcoded ChainTrader_AI response
-    if (prompt.toLowerCase().includes('chaintrader_ai')) {
-        const cannedResponse = "##ChainTrader_AI## gives you a strategic edge in crypto markets with ##real-time blockchain intelligence## and ##fully automated trading##. It's designed for traders who want to leverage cutting-edge technology to optimize their strategies, execute with precision, and operate 24/7 without emotion. By analyzing ##on-chain data## and market sentiment, ##ChainTrader_AI## identifies opportunities that human traders might miss, helping you stay ahead in the fast-paced world of crypto.";
-
-        res.setHeader('Content-Type', 'text/plain; charset=utf-8');
-        res.setHeader('Transfer-Encoding', 'chunked');
-        res.write(cannedResponse);
-        res.end();
-        return;
-    }
-
     try {
-        const response = await ai.models.generateContentStream({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-            config: {
-                systemInstruction: systemInstruction,
+        // ✅ Fixed API call structure
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            systemInstruction: systemInstruction
+        });
+
+        const result = await model.generateContentStream({
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            generationConfig: {
                 temperature: 0.7,
                 topP: 0.9,
                 topK: 40,
@@ -74,8 +72,11 @@ app.post('/api/generate', async (req, res) => {
         res.setHeader('Content-Type', 'text/plain; charset=utf-8');
         res.setHeader('Transfer-Encoding', 'chunked');
 
-        for await (const chunk of response) {
-            res.write(chunk.text);
+        for await (const chunk of result.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+                res.write(chunkText);
+            }
         }
         res.end();
     } catch (error) {
@@ -88,8 +89,8 @@ app.post('/api/generate', async (req, res) => {
     }
 });
 
-// --- Subscription Management ---
-const subscriptions: Record<string, { subscribedAt: number }> = {};
+// ✅ Your subscription endpoints remain unchanged
+const subscriptions: { [userId: string]: { subscribedAt: number } } = {};
 
 app.post('/api/subscribe', (req, res) => {
     const { userId } = req.body;
@@ -126,7 +127,7 @@ app.get('/api/subscription-status/:userId', (req, res) => {
     res.status(200).json({ isSubscribed });
 });
 
-// --- Run locally only ---
+// ✅ Start server (Vercel doesn't need this, but keep for local dev)
 if (process.env.NODE_ENV !== "production") {
     app.listen(port, () => {
         console.log(`Backend server is running on http://localhost:${port}`);
@@ -138,4 +139,5 @@ if (process.env.NODE_ENV !== "production") {
     });
 }
 
-export default app; // ✅ required for Vercel
+// ✅ Required for Vercel
+export default app;
