@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import type { Message, Theme } from '../types';
 import { BotIcon, UserIcon, SendIcon, RestartIcon, SpinnerIcon } from '../constants/icons';
@@ -7,7 +6,6 @@ import moduleFaqs from '../constants/faq';
 
 const AiMessage: React.FC<{ text: string; isStreaming: boolean }> = ({ text, isStreaming }) => {
     const renderFormattedText = (txt: string) => {
-        // Clean up any stray characters from old formatting or rendering issues.
         const cleanedTxt = txt.replace(/[�🔹]/g, '');
         const parts = cleanedTxt.split(/(##.*?##)/g);
         
@@ -67,10 +65,7 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
     }, [messages, isLoading]);
 
     useEffect(() => {
-        // This effect ensures that if the component somehow re-renders with a new moduleId
-        // without re-mounting, the FAQs still update correctly.
         setCurrentFaqs(getInitialFaqs(moduleId));
-        // When the module context changes, always show the relevant FAQs again.
         setShowFaqs(true);
     }, [moduleId]);
 
@@ -84,7 +79,6 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
         if (showFaqs) setShowFaqs(false);
 
         const userMessage: Message = { id: Date.now().toString(), text: prompt, sender: 'user' };
-        
         const aiMessageId = (Date.now() + 1).toString();
         const aiMessagePlaceholder: Message = { id: aiMessageId, text: '', sender: 'ai' };
 
@@ -109,10 +103,24 @@ export const Chatbot: React.FC<{ theme: Theme; moduleId?: string }> = ({ theme, 
         };
         
         try {
-            await getAiResponse(prompt, onChunk, onError);
+            // ✅ Call your deployed backend on Vercel
+            const response = await fetch("https://crypto-alchemist.vercel.app/api/generate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+
+            if (!response.ok) throw new Error("Backend error");
+
+            const data = await response.text(); // change to response.json() if backend sends JSON
+            onChunk(data);
+
+            // (Optional fallback: keep Gemini in case backend fails)
+            // await getAiResponse(prompt, onChunk, onError);
+
         } catch (error) {
-            console.error("Error in sendMessage streaming:", error);
-            onError("An unexpected error occurred.");
+            console.error("Error in sendMessage:", error);
+            onError("Failed to fetch response from server.");
         } finally {
             setIsLoading(false);
         }
